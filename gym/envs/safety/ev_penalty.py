@@ -23,15 +23,23 @@ MIN_SOC = 0.1
 TARGET_SOC = 1.0
 PENALTY = 0.1
 
-pricefile = '~/Documents/Github/data/RtpData2017.csv'
-df_train = pd.read_csv(pricefile, names=['date','hour','value'])
-df_train['value'] = df_train['value'].astype('float32')
-df_train.index = pd.date_range('2017-01-01-00', '2017-12-31-23', freq='1H')
+pricefile = '~/Documents/Github/tmp/data/price/RtpData2017.csv'
+df_2017 = pd.read_csv(pricefile)
+df_2017['PRICE'] = df_2017['PRICE'].astype('float32')
+df_2017.index = pd.date_range('2017-01-01-00', '2017-12-31-23', freq='1H')
 
-pricefile = '~/Documents/Github/data/RtpData2018.csv'
-df_test = pd.read_csv(pricefile, names=['date','hour','value'])
-df_test['value'] = df_test['value'].astype('float32')
-df_test.index = pd.date_range('2017-12-31-00', '2019-01-01-23', freq='1H')
+pricefile = '~/Documents/Github/tmp/data/price/RtpData2018.csv'
+df_2018 = pd.read_csv(pricefile)
+df_2018['PRICE'] = df_2018['PRICE'].astype('float32')
+df_2018.index = pd.date_range('2018-01-01-00', '2018-12-31-23', freq='1H')
+
+pricefile = '~/Documents/Github/tmp/data/price/RtpData2019.csv'
+df_2019 = pd.read_csv(pricefile)
+df_2019['PRICE'] = df_2019['PRICE'].astype('float32')
+df_2019.index = pd.date_range('2019-01-01-00', '2019-08-31-23', freq='1H')
+
+df_train = df_2017
+df_test = pd.concat([df_2017[-24:], df_2018, df_2019[:24]])
 
 price_data = {"train": df_train, "test": df_test}
 

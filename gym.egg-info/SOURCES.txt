@@ -133,6 +133,13 @@ gym/envs/robotics/hand/__init__.py
 gym/envs/robotics/hand/manipulate.py
 gym/envs/robotics/hand/manipulate_touch_sensors.py
 gym/envs/robotics/hand/reach.py
+gym/envs/safety/__init__.py
+gym/envs/safety/ev.py
+gym/envs/safety/ev_discrete.py
+gym/envs/safety/ev_penalty.py
+gym/envs/safety/smarthome.py
+gym/envs/safety/smarthome_v1.py
+gym/envs/safety/smarthome_v2.py
 gym/envs/tests/__init__.py
 gym/envs/tests/spec_list.py
 gym/envs/tests/test_determinism.py
