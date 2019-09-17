@@ -581,6 +581,11 @@ register(
 )
 
 register(
+   	id='SmartHome_ddpg-v1',
+   	entry_point='gym.envs.safety:SmartHome_ddpg_v1',
+)
+
+register(
    	id='SmartHome-v2',
    	entry_point='gym.envs.safety:SmartHome_v2',
 )

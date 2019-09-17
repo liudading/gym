@@ -21,7 +21,6 @@ DELTA_T = 1
 MAX_SOC = 1.0
 MIN_SOC = 0.1
 TARGET_SOC = 1.0
-PENALTY = 0.1
 
 pricefile = '~/Documents/Github/tmp/data/price/RtpData2017.csv'
 df_2017 = pd.read_csv(pricefile)
@@ -47,8 +46,10 @@ class EVChargingPenalty(gym.Env):
     """A electric vehicle environment for OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, seed=None, train=True):
+    def __init__(self, penalty, seed=None, train=True):
         super(EVChargingPenalty, self).__init__()
+
+        self.PENALTY = penalty
 
         if train:
             self._price = price_data["train"]
@@ -99,7 +100,7 @@ class EVChargingPenalty(gym.Env):
             elif soc < MIN_SOC:
                 safety += (MIN_SOC - soc) * CAPACITY
 
-        reward_safety = reward - PENALTY * safety
+        reward_safety = reward - self.PENALTY * safety
 
         self._t = t
         self._cur_time = cur_time
@@ -111,7 +112,7 @@ class EVChargingPenalty(gym.Env):
     def reset(self, arr_date=None):
         # Reset the state of the environment to an initial state
         if arr_date is None:
-            arr_date = self.rnd.choice(self._price['date'].unique()[1:-1])
+            arr_date = self.rnd.choice(self._price['DATE'].unique()[1:-1])
         else:
             assert isinstance(arr_date, str)
         arr_hour = str(int(np.round(np.clip(self.rnd.normal(18,1),15,21)))).zfill(2)
@@ -123,7 +124,7 @@ class EVChargingPenalty(gym.Env):
         dep_time = pd.to_datetime(arr_date+' '+dep_hour) + pd.Timedelta(days=1)
         cur_time = arr_time
 
-        ep_prices = self._price.loc[arr_time-h(24):dep_time]["value"].values
+        ep_prices = self._price.loc[arr_time-h(24):dep_time]["PRICE"].values
         past_prices = ep_prices[t+1:t+25]
         diff_prices = past_prices - ep_prices[t:t+24]
 

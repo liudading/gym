@@ -742,13 +742,13 @@ class EWH(object):
             action = [self.MIN_POWER, self.MAX_POWER]
         return action
 
-class SmartHome_v1(gym.Env):
+class SmartHome_ddpg_v1(gym.Env):
     """A smart home environment for OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
     def __init__(self, seed=None, train=True):
 
-        super(SmartHome_v1, self).__init__()
+        super(SmartHome_ddpg_v1, self).__init__()
         self.seed(seed)
 
         self.t = 0
@@ -779,14 +779,12 @@ class SmartHome_v1(gym.Env):
 
         self.reward_range = (-200.0, 200.0)
 
-        self.action_space = gym.spaces.Tuple([
-            gym.spaces.MultiBinary(4),
-            gym.spaces.Box(
-                low=np.array([self.ev.MIN_POWER, self.wh.MIN_POWER, self.ac.MIN_POWER]), 
-                high=np.array([self.ev.MAX_POWER, self.wh.MAX_POWER, self.ac.MAX_POWER]), 
-                dtype=np.float32
-            ),
-        ])
+        # For the following settings, please see file "/home/lihepeng/Documents/Github/baselines/baselines/ddpg/ddpg.py", line 61, in learn
+        # assert (np.abs(env.action_space.low) == env.action_space.high).all()  # we assume symmetric actions.
+        self.action_space = gym.spaces.Box(
+            low=np.array([-0.5, -0.5, -0.5, -0.5, self.ev.MIN_POWER, -self.wh.MAX_POWER/2, -self.ac.MAX_POWER/2]), 
+            high=np.array([0.5, 0.5, 0.5, 0.5, self.ev.MAX_POWER, self.wh.MAX_POWER/2, self.ac.MAX_POWER/2]), 
+            dtype=np.float32)
 
         self.observation_space = gym.spaces.Box(
             low=-np.inf, high=np.inf, shape=(39+2*self.T,), dtype=np.float32)
@@ -818,7 +816,7 @@ class SmartHome_v1(gym.Env):
         ob = self._get_obs()
 
         # Calculate the reward
-        reward, rew_dict = self._get_reward(action)
+        reward = self._get_reward(action)
 
         # Update time
         self.t += 1
@@ -830,7 +828,7 @@ class SmartHome_v1(gym.Env):
         else:
             done = False
 
-        return ob, reward, done, rew_dict
+        return ob, reward, done, {}
 
     def reset(self, seed=None, day=None):
         # render the env every 10 minutes
@@ -987,11 +985,11 @@ class SmartHome_v1(gym.Env):
         I_comf = w1 * (np.exp(hvac_dev) + np.exp(ewh_dev))
 
         # electricity cost
-        power = action[0]*self.ov.MAX_POWER + \
-                action[1]*self.dw.MAX_POWER + \
-                action[2]*self.wm.MAX_POWER + \
-                action[3]*self.cd.MAX_POWER + \
-                action[4] + action[5] + action[6] + \
+        # power = action[0]*self.ov.MAX_POWER + \
+        #         action[1]*self.dw.MAX_POWER + \
+        #         action[2]*self.wm.MAX_POWER + \
+        #         action[3]*self.cd.MAX_POWER + \
+        power = action[4] + action[5] + action[6] + \
                 self.fg.state[0]*self.fg.MAX_POWER + \
                 self.vc.state[0]*self.vc.MAX_POWER + \
                 self.hd.state[0]*self.hd.MAX_POWER + \
@@ -1015,7 +1013,7 @@ class SmartHome_v1(gym.Env):
 
         reward = I_comf - C_elec - E_range
 
-        return reward, {"I_comf":I_comf, "C_elec":C_elec, "E_range":E_range}
+        return reward
 
     def _get_obs(self):
         self.ob = np.hstack([
@@ -1057,7 +1055,7 @@ class SmartHome_v1(gym.Env):
                 "P_ov","P_dw","P_wm","P_cd",
                 "P_ev","P_wh","P_ac",
                 "P_fg","P_vc","P_hd","P_tv","P_nb","P_lg",
-                "A_ov","A_dw","A_wm","A_cd","A_ev",
+                "A_ov","A_dw","A_wm","A_ev",
                 "B_ov","B_dw","B_wm","B_cd","B_ev",
         ]
         values=[deque(maxlen=self.T) for _ in range(len(keys))]
@@ -1089,7 +1087,6 @@ class SmartHome_v1(gym.Env):
         self.monitor["B_dw"].append((self.dw.beta-self.init_time).seconds//self.dt.seconds)
         self.monitor["A_wm"].append((self.wm.alpha-self.init_time).seconds//self.dt.seconds)
         self.monitor["B_wm"].append((self.wm.beta-self.init_time).seconds//self.dt.seconds)
-        self.monitor["A_cd"].append((self.cd.alpha-self.init_time).seconds//self.dt.seconds)
         self.monitor["B_cd"].append((self.cd.beta-self.init_time).seconds//self.dt.seconds)
         self.monitor["A_ev"].append((self.ev.alpha-self.init_time).seconds//self.dt.seconds)
         self.monitor["B_ev"].append((self.ev.beta-self.init_time).seconds//self.dt.seconds)
