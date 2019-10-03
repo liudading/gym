@@ -63,10 +63,10 @@ class EVCharging(gym.Env):
             high=np.array([MAX_CHARGING_POWER]), dtype=np.float32)
 
         # Obsercations include the past 24 hour prices and SOC of the EV battery
-        self.observation_space = spaces.Box(
-            low=-1, high=1, shape=(24*2+2,), dtype=np.float32)
         # self.observation_space = spaces.Box(
-        #     low=-1, high=1, shape=(24+1,), dtype=np.float32)
+        #     low=-1, high=1, shape=(24*2+2,), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=-1, high=1, shape=(24+1,), dtype=np.float32)
 
     def seed(self, seed=None):
         self.rnd = np.random.RandomState(seed)
@@ -89,8 +89,8 @@ class EVCharging(gym.Env):
             soc = float(self._soc + action * DELTA_T * CHARGING_EFFICIENCY / CAPACITY)
         else: # discharging
             soc = float(self._soc + action * DELTA_T / DISCHARGING_EFFICIENCY / CAPACITY)
-        ob = np.array(past_prices.tolist()+diff_prices.tolist()+[soc, cur_time.hour/24], dtype=np.float32)
-        # ob = np.array(past_prices.tolist()+[soc], dtype=np.float32)
+        # ob = np.array(past_prices.tolist()+diff_prices.tolist()+[soc, cur_time.hour/24], dtype=np.float32)
+        ob = np.array(past_prices.tolist()+[soc], dtype=np.float32)
 
         reward = float(- action * price)
 
@@ -135,8 +135,8 @@ class EVCharging(gym.Env):
         # past_prices = ep_prices[t:t+24]
 
         soc = np.clip(self.rnd.normal(0.5, 0.1), 0.2, 0.8)
-        ob = np.array(past_prices.tolist()+diff_prices.tolist()+[soc, cur_time.hour/24], dtype=np.float32)
-        # ob = np.array(past_prices.tolist()+[soc], dtype=np.float32)
+        # ob = np.array(past_prices.tolist()+diff_prices.tolist()+[soc, cur_time.hour/24], dtype=np.float32)
+        ob = np.array(past_prices.tolist()+[soc], dtype=np.float32)
 
         self._t = t
         self._h = h

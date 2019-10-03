@@ -138,6 +138,7 @@ gym/envs/safety/ev.py
 gym/envs/safety/ev_discrete.py
 gym/envs/safety/ev_penalty.py
 gym/envs/safety/smarthome.py
+gym/envs/safety/smarthome_ddpg_v1.py
 gym/envs/safety/smarthome_v1.py
 gym/envs/safety/smarthome_v2.py
 gym/envs/tests/__init__.py
